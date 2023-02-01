@@ -1,8 +1,6 @@
 import csv
-# from haptic_master.haptic_master import HapticMaster
-# from haptic_master.bias_force import BiasForce
-from pyHapticMaster.src.haptic_master.haptic_master import HapticMaster
-from pyHapticMaster.src.haptic_master.bias_force import BiasForce
+from haptic_master.haptic_master import HapticMaster
+from haptic_master.bias_force import BiasForce
 import numpy as np
 import os
 import time
