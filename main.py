@@ -1,9 +1,11 @@
+import csv
 # from haptic_master.haptic_master import HapticMaster
 # from haptic_master.bias_force import BiasForce
 from pyHapticMaster.src.haptic_master.haptic_master import HapticMaster
 from pyHapticMaster.src.haptic_master.bias_force import BiasForce
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import time
 from trajectory import Trajectory
 
@@ -46,6 +48,7 @@ if __name__ == '__main__':
 
     # Next time step to iterate
     next_timestamp = 0
+    start_time = 0
     
     # Open connection
     robot.connect()
@@ -56,6 +59,8 @@ if __name__ == '__main__':
 
     # Set robot state to position
     robot.set_state('position')
+
+    # start_time = time.perf_counter_ns()
 
     for i, _ in np.ndenumerate(t):
         # Log time
@@ -80,41 +85,21 @@ if __name__ == '__main__':
         robot.set_bias_force(F)
 
         # Hold the main while loop until the time comes
-        while time.perf_counter_ns() < next_timestamp:
+        # while time.perf_counter_ns() < next_timestamp:
+        while time.perf_counter_ns() - t[i] < dt:
             pass
-
-    fig, ax = plt.subplots()
-    ax.plot((t - t[0])*1e-9, data[:, 0], label='x-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 1], label='y-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 2], label='z-axis')
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('Position [m]')
-    ax.legend()
-    fig.savefig('position.pdf')
-
-    fig, ax = plt.subplots()
-    ax.plot((t - t[0])*1e-9, data[:, 3], label='x-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 4], label='y-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 5], label='z-axis')
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('Velocity [m/s]')
-    ax.legend()
-    fig.savefig('velocity.pdf')
-
-    fig, ax = plt.subplots()
-    ax.plot((t - t[0])*1e-9, data[:, 6], label='x-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 7], label='y-axis')
-    ax.plot((t - t[0])*1e-9, data[:, 8], label='z-axis')
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('Force [N]')
-    ax.legend()
-    fig.savefig('force.pdf')
-
-    fig, ax = plt.subplots()
-    ax.plot((np.diff(t)-dt) * 1e-6)
-    ax.set_xlabel('Samples')
-    ax.set_ylabel('Jitter [ms]')
-    fig.savefig('jitter.pdf')
 
     # Close connection
     robot.disconnect()
+
+    # Save data to file
+    output_folder = os.path.join('.', 'experiments')
+    output_file_name = 'experiment-' + time.strftime("%Y_%m_%d-%H_%M_%S") + '.csv'
+    with open(os.path.join(output_folder, output_file_name), mode='w') as f:
+        f.write('# Units: Time [s], Position [m], Velocity [m/s], Force [N]\n')
+        f_writer = csv.writer(f, delimiter=',', quotechar='#', quoting=csv.QUOTE_MINIMAL)
+
+        f_writer.writerow(['time', 'position_x', 'position_y', 'position_z', 'velocity_x', 'velocity_y', 'velocity_z', 'force_x', 'force_y', 'force_z'])
+        
+        for ti, d in zip(t, data):
+            f_writer.writerow(np.hstack((ti, d)))
