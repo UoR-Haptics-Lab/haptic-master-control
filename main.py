@@ -3,7 +3,6 @@ import csv
 # from haptic_master.bias_force import BiasForce
 from pyHapticMaster.src.haptic_master.haptic_master import HapticMaster
 from pyHapticMaster.src.haptic_master.bias_force import BiasForce
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import time
@@ -46,10 +45,6 @@ if __name__ == '__main__':
     # PD controller parameters
     Kp, Kd = 100, 1
 
-    # Next time step to iterate
-    next_timestamp = 0
-    start_time = 0
-    
     # Open connection
     robot.connect()
 
@@ -60,15 +55,10 @@ if __name__ == '__main__':
     # Set robot state to position
     robot.set_state('position')
 
-    # start_time = time.perf_counter_ns()
-
     for i, _ in np.ndenumerate(t):
         # Log time
         t[i] = time.perf_counter_ns()
         
-        # Calculate the next timestamp of the control loop
-        next_timestamp = t[i] + dt
-
         # Read the position, velocity and force data from the robot
         p = robot.get_position()
         v = robot.get_velocity()
@@ -85,7 +75,6 @@ if __name__ == '__main__':
         robot.set_bias_force(F)
 
         # Hold the main while loop until the time comes
-        # while time.perf_counter_ns() < next_timestamp:
         while time.perf_counter_ns() - t[i] < dt:
             pass
 
@@ -94,7 +83,8 @@ if __name__ == '__main__':
 
     # Save data to file
     output_folder = os.path.join('.', 'experiments')
-    output_file_name = 'experiment-' + time.strftime("%Y_%m_%d-%H_%M_%S") + '.csv'
+    file_name_timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+    output_file_name = 'experiment-' + file_name_timestamp + '.csv'
     with open(os.path.join(output_folder, output_file_name), mode='w') as f:
         f.write('# Units: Time [s], Position [m], Velocity [m/s], Force [N]\n')
         f_writer = csv.writer(f, delimiter=',', quotechar='#', quoting=csv.QUOTE_MINIMAL)
@@ -103,3 +93,18 @@ if __name__ == '__main__':
         
         for ti, d in zip(t, data):
             f_writer.writerow(np.hstack((ti, d)))
+
+    # Save experiment parameters to file
+    output_file_name = 'parameters-' + file_name_timestamp + '.txt'
+    
+    with open(os.path.join(output_folder, output_file_name), mode='w') as f:
+        f.write('Control parameters\n')
+        f.write(f'Kp = {Kp}')
+        f.write(f'Kd = {Kd}')
+        f.write(f'Control loop sampling time {dt}s')
+        f.write(f'Number of iterations for the control loop {NUM_ITER}')
+        f.write('Trajectory parameters (with cubic polynomial)')
+        f.write(f'Start time {t0}')
+        f.write(f'Finish time {t1}')
+        f.write(f'Initial configuration {T0}')
+        f.write(f'Final configuration {T1}')
