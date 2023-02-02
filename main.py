@@ -82,8 +82,16 @@ if __name__ == '__main__':
     # Save data to file
     output_folder = os.path.join('.', 'experiments')
     file_name_timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+    
+    # Create output folder
+    if not os.path.exists(os.path.join('.', output_folder)):
+        os.mkdir(os.path.join('.', output_folder))
+
+    if not os.path.exists(os.path.join('.', output_folder, file_name_timestamp)):
+    	os.mkdir(os.path.join('.', output_folder, file_name_timestamp))
+    
     output_file_name = 'experiment-' + file_name_timestamp + '.csv'
-    with open(os.path.join(output_folder, output_file_name), mode='w') as f:
+    with open(os.path.join(output_folder, file_name_timestamp, output_file_name), mode='w') as f:
         f.write('# Units: Time [s], Position [m], Velocity [m/s], Force [N]\n')
         f_writer = csv.writer(f, delimiter=',', quotechar='#', quoting=csv.QUOTE_MINIMAL)
 
@@ -95,7 +103,7 @@ if __name__ == '__main__':
     # Save experiment parameters to file
     output_file_name = 'parameters-' + file_name_timestamp + '.txt'
     
-    with open(os.path.join(output_folder, output_file_name), mode='w') as f:
+    with open(os.path.join(output_folder, file_name_timestamp, output_file_name), mode='w') as f:
         f.write('Control parameters\n')
         f.write(f'Kp = {Kp}')
         f.write(f'Kd = {Kd}')
