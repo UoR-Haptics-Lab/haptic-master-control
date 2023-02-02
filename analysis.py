@@ -89,8 +89,8 @@ class Experiment:
 
 if __name__ == '__main__':
     dts = [4000000]
-    experiment_files = ['experiment-2023_02_01-15_54_48']
-    output_files = [os.path.join('.', 'experiments', e, e + '.csv') for e in experiment_files]
+    experiment_files = ['2023_02_02-15_53_46']
+    output_files = [os.path.join('.', 'experiments', e, 'experiment-' + e + '.csv') for e in experiment_files]
 
     exp1 = Experiment(output_files[0], dts[0])
 
